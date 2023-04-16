@@ -22,12 +22,51 @@ MainWindow::~MainWindow()
 
 void MainWindow::makePlot(QVector<double>& x, QVector<double>& y, QVector<double>& x_points, QVector<double>& y_points)
 {
-    double min_x = *std::min_element(x.begin(), x.end());
-    double max_x = *std::max_element(x.begin(), x.end());
-    double min_y = *std::min_element(y.begin(), y.end());
-    double max_y = *std::max_element(y.begin(), y.end());
+    double min_x, min_y, max_x, max_y;
+
+    min_x = *std::min_element(x_points.begin(), x_points.end());
+    max_x = *std::max_element(x_points.begin(), x_points.end());
+    min_y = *std::min_element(y_points.begin(), y_points.end());
+    max_y = *std::max_element(y_points.begin(), y_points.end());
+//    min_x = *std::min_element(x.begin(), x.end());
+//    max_x = *std::max_element(x.begin(), x.end());
+//    min_y = *std::min_element(y.begin(), y.end());
+//    max_y = *std::max_element(y.begin(), y.end());
+
+//    if (*std::min_element(x_points.begin(), x_points.end())<*std::min_element(x.begin(), x.end())) {
+//        min_x = *std::min_element(x_points.begin(), x_points.end());
+//    }
+//    else {
+//        min_x = *std::min_element(x.begin(), x.end());
+//    }
+
+//    if (*std::max_element(x_points.begin(), x_points.end())<*std::max_element(x.begin(), x.end())) {
+//        max_x = *std::max_element(x_points.begin(), x_points.end());
+//    }
+//    else {
+//        max_x = *std::max_element(x.begin(), x.end());
+//    }
+
+//    if (*std::min_element(y_points.begin(), y_points.end())<*std::min_element(y.begin(), y.end())) {
+//        min_y = *std::min_element(y_points.begin(), y_points.end());
+//    }
+//    else {
+//        min_y = *std::min_element(y.begin(), y.end());
+//    }
+
+//    if (*std::max_element(y_points.begin(), y_points.end())<*std::max_element(y.begin(), y.end())) {
+//        max_y = *std::max_element(y_points.begin(), y_points.end());
+//    }
+//    else {
+//        max_y = *std::max_element(y.begin(), y.end());
+//    }
+
+//    for (int x_=0; x_<x.size(); x_++) {
+//        qDebug() << x[x_] << y[x_];
+//    }
 
     qDebug() << min_x << max_x << min_y << max_y;
+
 
     ui->customPlot->addGraph();
     ui->customPlot->graph(0)->setData(x, y);
@@ -84,8 +123,8 @@ void MainWindow::on_pushButton_pressed()
             b = ui->lineEdit_2->text().toDouble();
         }
 
-        if (ui->lineEdit_3->text() == "0.0") {
-            n = 0.0;
+        if (ui->lineEdit_3->text() == "0") {
+            n = 0;
         } else if (ui->lineEdit_3->text().toInt()  == 0.0) {
             ui->statusbar->setStyleSheet("background-color: rgb(255, 0, 0);");
             ui->statusbar->showMessage("Неправильный формат ввода для n. Поддерживаются только числа в диапазоне от -2147483648 до 2147483647");
@@ -102,7 +141,7 @@ void MainWindow::on_pushButton_pressed()
 
         if (a >= b) {
             ui->statusbar->setStyleSheet("background-color: rgb(255, 0, 0);");
-            ui->statusbar->showMessage("Правая граница b не может быть меньше или равна левой границе a");
+            ui->statusbar->showMessage("Правая граница b не может быть меньше или равна левой границы a");
             inputCanBeProcessed = false;
         }
 
@@ -150,11 +189,15 @@ void MainWindow::on_pushButton_2_pressed()
         inputCanBeProcessed = false;
     }
 
-    if (ui->lineEdit_4->text().isEmpty()) inputCanBeProcessed=false;
+    if (ui->lineEdit_4->text().isEmpty()) {
+        inputCanBeProcessed=false;
+        ui->statusbar->setStyleSheet("background-color: rgb(255, 0, 0);");
+        ui->statusbar->showMessage("Требуется ввести значение m");
+    }
 
     if (inputCanBeProcessed == true) {
-        if (ui->lineEdit_4->text() == "0.0") {
-            m = 0.0;
+        if (ui->lineEdit_4->text() == "0") {
+            m = 0;
         } else if (ui->lineEdit_4->text().toInt() == 0.0) {
             ui->statusbar->setStyleSheet("background-color: rgb(255, 0, 0);");
             ui->statusbar->showMessage("Неправильный формат ввода для m. Поддерживаются только числа в диапазоне от -2147483648 до 2147483647");
@@ -183,8 +226,21 @@ void MainWindow::on_pushButton_2_pressed()
             while(!in.atEnd()) {
                 QString line = in.readLine();
                 QStringList fields = line.split(" ");
-                x_PointsSelected.append(fields[0].toDouble());
-                y_PointsSelected.append(fields[1].toDouble());
+                if (fields.size() ==2) {
+
+                    if (fields[0].toDouble() == 0.0 or fields[1].toDouble() == 0.0) {
+                        ui->statusbar->setStyleSheet("background-color: rgb(255, 0, 0);");
+                        ui->statusbar->showMessage("В строках текстового файла должны быть пары значений x и y функции, разделенные пробелом");
+                        inputCanBeProcessed = false;
+                    } else {
+                        x_PointsSelected.append(fields[0].toDouble());
+                        y_PointsSelected.append(fields[1].toDouble());
+                    }
+                } else {
+                    ui->statusbar->setStyleSheet("background-color: rgb(255, 0, 0);");
+                    ui->statusbar->showMessage("В строках текстового файла должны быть пары значений x и y функции, разделенные пробелом");
+                    inputCanBeProcessed = false;
+                }
             }
             file.close();
         }
@@ -192,11 +248,6 @@ void MainWindow::on_pushButton_2_pressed()
         leng = x_PointsSelected.size();
 
         if (inputCanBeProcessed == true) {
-            /*if (m==1) {
-                ui->statusbar->setStyleSheet("background-color: rgb(255, 0, 0);");
-                ui->statusbar->showMessage("Порядок m должен быть больше единицы");
-                inputCanBeProcessed = false;
-            } else*/
             if (m < leng) {
                 for(int i=leng-1; i>m; i--){
                         x_PointsSelected.remove(i);
@@ -229,10 +280,6 @@ void MainWindow::on_pushButton_2_pressed()
                 MainWindow::makePlot(x_out, y_out, x_PointsSelected, y_PointsSelected);
             }
         }
-    }
-    else {
-        ui->statusbar->setStyleSheet("background-color: rgb(255, 0, 0);");
-        ui->statusbar->showMessage("Необходимо ввести значение m");
     }
 }
 

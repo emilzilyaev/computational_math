@@ -15,7 +15,6 @@ DotPairsUpload::DotPairsUpload()
 
 void DotPairsUpload::uploadDotPairs(double a, double b, int n)
 {
-//    qDebug() << a << b << n;
     double step_size = (b-a)/n;
     QVector<double> x(n), y(n);
     for (int i=1; i<n+1; ++i)

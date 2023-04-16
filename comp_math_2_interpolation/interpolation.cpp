@@ -14,14 +14,16 @@ Interpolation::Interpolation()
 {
 
 }
-auto Interpolation::lagrangeInterpolation(QVector<double>& x, QVector<double>& y) -> std::tuple<QVector<double>, QVector<double>> {
-    QVector<double> x_output(1001), y_output(1001);
-    double max_x = *std::max_element(x.begin(), x.end());
-    double step_size = max_x/ 1001.0;
-    float w, lagrangePolynomial;
 
-    for (int x_point=1; x_point<1002; x_point++) {
-        x_output[x_point-1] = x_point*step_size;
+auto Interpolation::lagrangeInterpolation(QVector<double>& x, QVector<double>& y) -> std::tuple<QVector<double>, QVector<double>> {
+    double max_x = *std::max_element(x.begin(), x.end());
+
+    double step_size = (max_x-0.000000000001)/ 101.0;
+    float w, lagrangePolynomial;
+    QVector<double> x_output(101), y_output(101);
+
+    for (int x_point=1; x_point<102; x_point++) {
+        x_output[x_point-1] = 0.000000000001 + x_point*step_size;
         lagrangePolynomial = 0.0;
         for(int i=0; i<x.size(); i++){
             w = 1.0;
@@ -34,10 +36,9 @@ auto Interpolation::lagrangeInterpolation(QVector<double>& x, QVector<double>& y
         if (lagrangePolynomial != 0.0) {
             y_output[x_point-1] = lagrangePolynomial;
         }
-//        qDebug() << x_output[x_point-1]  << y_output[x_point-1];
     }
 
-//    qDebug() << x_output[0] << y_output[0];
+    qDebug() << x_output[10] << y_output[10];
     return {x_output, y_output};
 }
 
@@ -59,35 +60,40 @@ int Interpolation::fact(int n)
 
 auto Interpolation::newtonInterpolation(QVector<double>& x, QVector<double>& y) -> std::tuple<QVector<double>, QVector<double>> {
 
-    QVector<double> x_output(1001), y_output(1001);
     double max_x = *std::max_element(x.begin(), x.end());
-    double step_size = max_x/ 1001.0;
+    double step_size = (max_x-0.000000000001)/ 51.0;
 
+    QVector<double> x_output(51), y_output(51);
     double differences[x.size()][x.size()];
 
-    for (int i = 1; i < x.size(); i++) {
+    for (int i = 0; i < x.size(); i++) {
         differences[i][0] = y[i];
+        qDebug() << differences[i][0];
     }
 
     for (int i = 1; i < x.size(); i++) {
-        for (int j = 0; j < x.size() - i; j++)
-            differences[j][i] = differences[j + 1][i - 1] - differences[j][i - 1];
+        for (int k = 0; k < x.size() - i; k++) {
+            differences[k][i] = differences[k + 1][i - 1] - differences[k][i - 1];
+        }
     }
 
-    for (int x_point=1; x_point<1002; x_point++) {
+    for (int x_point=1; x_point<52; x_point++) {
 
+        x_output[x_point-1] = 0.000000000001 + x_point*step_size;
         x_output[x_point-1] = x_point*step_size;
+
 
         float sum = differences[0][0];
         float u = (x_output[x_point-1] - x[0]) / (x[1] - x[0]);
         for (int i = 1; i < x.size(); i++) {
             sum = sum + (u_cal(u, i) * differences[0][i]) /
-                                     fact(i);
+                                             fact(i);
         }
 
         y_output[x_point-1] = sum;
     }
 
-//    qDebug() << x_output[100] << y_output[100];
+    qDebug() << x_output[10] << y_output[10];
     return {x_output, y_output};
+
 }
